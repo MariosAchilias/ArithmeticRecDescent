@@ -14,5 +14,6 @@ term_cont -> * factor term_cont
            | ε
 factor -> (expr)
         | num
+		| - num
 num -> digit num_cont
 num_cont -> digit num_cont | ε

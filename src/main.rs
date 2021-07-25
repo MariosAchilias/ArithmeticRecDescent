@@ -51,8 +51,8 @@ fn matches(tok_type: &str, lookahead: usize, tokens: &Vec<String>) -> bool{
         "num" => tokens[lookahead].parse::<i32>().is_ok(),
         // Valid operator
         "op" => {tokens[lookahead] == "+" || tokens[lookahead] == "-"},
-        // Valid factor (either num(ok) or (term) wip)
-        "factor" => tokens[lookahead].parse::<i32>().is_ok() || tokens[lookahead] == "(" || tokens[lookahead] == ")",
+        // Valid factor (either num or parenthesis)
+        "factor" => tokens[lookahead].parse::<i32>().is_ok() || tokens[lookahead] == "(" || tokens[lookahead] == ")" || tokens[lookahead] == "-",
         // Empty string ε
         "empty" => lookahead == tokens.len(),
         // Left parenthesis
@@ -72,17 +72,17 @@ fn expr(lookahead:&mut usize, tokens: &Vec<String>) -> i32{
 
 fn expr_cont(lookahead:&mut usize, tokens: &Vec<String>, value_so_far: i32) -> i32{
     println!("In expr_cont lookahead: {}\n", *lookahead);
-    if(*lookahead == tokens.len()){
+    if *lookahead == tokens.len(){
         return value_so_far;
     }
     
-    if(tokens[*lookahead] == "+"){
+    if tokens[*lookahead] == "+"{
         *lookahead = *lookahead + 1;
         let addition_result: i32 = value_so_far + term(lookahead, tokens);
         return expr_cont(lookahead, tokens, addition_result);
     }
 
-    if(tokens[*lookahead] == "-"){
+    if tokens[*lookahead] == "-"{
         *lookahead = *lookahead + 1;
         let sub_result: i32 = value_so_far - term(lookahead, tokens);
         return expr_cont(lookahead, tokens, sub_result);
@@ -93,51 +93,55 @@ fn expr_cont(lookahead:&mut usize, tokens: &Vec<String>, value_so_far: i32) -> i
 }
 
 fn term(lookahead:&mut usize, tokens: &Vec<String>) -> i32{
-    println!("in term lookahead: {}\n", *lookahead);
-    if(matches("factor", *lookahead, tokens)){
+    if matches("factor", *lookahead, tokens){
         let factor_value:i32 = factor(lookahead, tokens);
         *lookahead = *lookahead + 1;
         return term_cont(lookahead, tokens, factor_value);
     }
-    else{
-        println!("Error! lookahead: {}\n", *lookahead);
-        return 0;
-    }
+    panic!("Error! Improperly formatted expression");
 }
 
 fn term_cont(lookahead:&mut usize, tokens: &Vec<String>, value_so_far: i32) -> i32{
-    println!("In term_cont lookahead: {}\n", *lookahead);
-    // End reached (ε case)
-    if(*lookahead == tokens.len()){ return value_so_far;}
+    
+    // End of string reached, check before using *lookahead as index
+    if matches("empty", *lookahead, tokens){
+        return value_so_far;
+    }
 
-    if(tokens[*lookahead] == "*"){
+    if tokens[*lookahead] == "*"{
         *lookahead = *lookahead + 1;
         let mult_val: i32 = value_so_far * factor(lookahead, tokens);
         *lookahead = *lookahead + 1;
         return term_cont(lookahead, tokens, mult_val);
     }
     
-    if(tokens[*lookahead] == "/"){
+    if tokens[*lookahead] == "/"{
         *lookahead = *lookahead + 1;
         let fact_val: i32 = factor(lookahead, tokens);
         *lookahead = *lookahead + 1;
         return value_so_far / fact_val;
     }
 
+    // ε case
     value_so_far
 }
 
 fn factor(lookahead:&mut usize, tokens: &Vec<String>) -> i32{
-    println!("In factor lookahead:{}\n", *lookahead);
-    if(matches("left_par", *lookahead, tokens)){
+    if matches("left_par", *lookahead, tokens){
         *lookahead = *lookahead + 1;
         let parenthesis_value: i32 = expr(lookahead, tokens);
-        // *lookahead = *lookahead + 1;
-        if(!matches("right_par", *lookahead, tokens)){
+        if !matches("right_par", *lookahead, tokens){
             println!("Error! Unclosed parenthesis\n");
             return 0;
         }
         return parenthesis_value;
+    }
+    if matches("op", *lookahead, tokens){
+        if(tokens[*lookahead] == "-"){
+            *lookahead = *lookahead+1;
+            return tokens[*lookahead].parse::<i32>().unwrap() * -1;
+        }
+        *lookahead = *lookahead + 1;
     }
     return tokens[*lookahead].parse().unwrap();
 }
