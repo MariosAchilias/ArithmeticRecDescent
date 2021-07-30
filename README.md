@@ -22,8 +22,8 @@ Simple program for arithmetic expression evaluation using recursive descent pars
                | ε.
     factor -> (expr)
             | num
-    		| -factor2.
+    	| -factor2.
     factor2 -> (expr)
-    		| num.
+    	 | num.
     num -> digit num_cont.
     num_cont -> digit num_cont | ε.
