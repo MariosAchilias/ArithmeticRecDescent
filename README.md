@@ -12,6 +12,7 @@ Simple program for arithmetic expression evaluation using recursive descent pars
 
 ## LL(1) Grammar
 
+<<<<<<< HEAD
     expr -> term expr_cont.
     expr_cont -> + term expr_cont
                | - term expr_cont
