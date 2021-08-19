@@ -16,7 +16,7 @@ Simple program for arithmetic expression evaluation using recursive descent pars
     expr_cont -> + term expr_cont
                | - term expr_cont
                | ε.
-    term -> factor term_cont
+    term -> factor term_cont.
     term_cont -> * factor term_cont
                | / factor term_cont
                | ε.
